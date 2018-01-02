@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Popular Movie App</string>
+    <string name="error_string">Something went wrong. Please try again</string>
+    <string name="sort">Sort</string>
+    <string name="sort_dialog_title">Sort movie by</string>
+    <string name="poster_image">Poster Image</string>
+    <string name="online_error">No Internet connection</string>
+    <string name="trailer_title">Trailers</string>
+    <string name="see_all_reviews"><![CDATA[See all Reviews >]]></string>
+    <string name="review_prefix">Reviews for</string>
+    <string name="favourite">favourite</string>
+    <string name="favourite_added">Added to favourites</string>
+    <string name="favourite_removed">Removed from favourites</string>
+    <string name="favourite_error">There was an issue adding to favourites</string>
+    <string name="movie_data_error">Error getting Movie data</string>
+    <string name="review_data_error">Error getting Review data</string>
+    <string name="connection_error">No Connection</string>
+    <string name="score_string">%1$s/10</string>
+    <string name="review_string">%1$s ></string>
+</resources>

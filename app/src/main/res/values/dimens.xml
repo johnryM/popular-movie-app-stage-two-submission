@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--fonts-->
+    <dimen name="trailer_font_size">14sp</dimen>
+
+    <!--padding-->
+    <dimen name="default_padding">12dp</dimen>
+    <dimen name="half_padding">6dp</dimen>
+</resources>
