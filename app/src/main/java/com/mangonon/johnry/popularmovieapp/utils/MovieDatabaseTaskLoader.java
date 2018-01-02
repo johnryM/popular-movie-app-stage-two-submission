@@ -59,6 +59,7 @@ public class MovieDatabaseTaskLoader extends AsyncTaskLoader<Cursor> {
 		if (mHasResult) {
 			releaseResources();
 		}
+		mHasResult = false;
 	}
 
 	protected void releaseResources() {
