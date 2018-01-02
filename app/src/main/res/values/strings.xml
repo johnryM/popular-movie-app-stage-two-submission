@@ -17,4 +17,5 @@
     <string name="connection_error">No Connection</string>
     <string name="score_string">%1$s/10</string>
     <string name="review_string">%1$s ></string>
+    <string name="share_error_string">Installed apps in device Do not support trailer sharing</string>
 </resources>

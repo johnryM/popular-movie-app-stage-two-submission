@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Adap
         SortDialogFragment.SortDialogListener, ConnectionTask.ConnectionTaskCallback, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int MOVIEDB_LOADER_ID = 0;
-    private final String EXTRA_CURRENT_SORT = "extra_current_sort";
+    private static final String EXTRA_CURRENT_SORT = "extra_current_sort";
+    private static final String EXTRA_MOVIE = "extra_movie_list";
 
     private final int SPAN_COUNT_PORTRAIT = 2;
     private final int SPAN_COUNT_LANDSCAPE = 3;
@@ -53,10 +54,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Adap
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        if (savedInstanceState != null) {
-            mCurrentSortType = (NetworkUtils.SortType) savedInstanceState.getSerializable(EXTRA_CURRENT_SORT);
-        }
-
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
@@ -64,12 +61,18 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Adap
         mMovieRecyclerview.setLayoutManager(new GridLayoutManager(this, SPAN_COUNT));
         mMovieRecyclerview.setHasFixedSize(true);
 
-        if (NetworkUtils.isOnline(this) && (mCurrentSortType != NetworkUtils.SortType.FAVOURITE)) {
-            new ConnectionTask(this).execute(NetworkUtils.buildMovieDataUrl(mCurrentSortType));
-        } else if (mCurrentSortType == NetworkUtils.SortType.FAVOURITE) {
-            getSupportLoaderManager().initLoader(MOVIEDB_LOADER_ID, null, this);
+        if (savedInstanceState != null) {
+            mCurrentSortType = (NetworkUtils.SortType) savedInstanceState.getSerializable(EXTRA_CURRENT_SORT);
+            mMovieDatalist = savedInstanceState.getParcelableArrayList(EXTRA_MOVIE);
+            mMovieRecyclerview.setAdapter(new MovieAdapter(mMovieDatalist,this));
         } else {
-            showErrorView();
+            if (NetworkUtils.isOnline(this) && (mCurrentSortType != NetworkUtils.SortType.FAVOURITE)) {
+                new ConnectionTask(this).execute(NetworkUtils.buildMovieDataUrl(mCurrentSortType));
+            } else if (mCurrentSortType == NetworkUtils.SortType.FAVOURITE) {
+                getSupportLoaderManager().initLoader(MOVIEDB_LOADER_ID, null, this);
+            } else {
+                showErrorView();
+            }
         }
     }
 
@@ -121,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Adap
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(EXTRA_CURRENT_SORT, mCurrentSortType);
+        outState.putParcelableArrayList(EXTRA_MOVIE, mMovieDatalist);
         super.onSaveInstanceState(outState);
     }
 

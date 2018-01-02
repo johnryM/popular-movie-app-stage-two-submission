@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +42,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
 
     public static final String EXTRA_MOVIE = "extra_movie";
     public static final String EXTRA_IS_FAVOURITED = "extra_is_favourited";
+    public static final String EXTRA_TRAILERS = "extra_trailers";
+
     public static final String YOUTUBE_URL = "http://www.youtube.com/watch?v=";
     private static final int DETAIL_LOADER_ID = 1;
 
@@ -54,6 +57,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
     @BindView(R.id.movie_rdate_view) TextView mRelease;
     @BindView(R.id.trailer_container) LinearLayout mTrailerContainer;
     @BindView(R.id.my_toolbar) Toolbar mToolbar;
+    @BindView(R.id.detail_scrollview) ScrollView mScrollView;
 
     public static Intent newInstance(Context context, Movie movie) {
         Intent intent = new Intent(context, MovieDetailsActivity.class);
@@ -76,6 +80,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
         if (mMovie != null) {
             if (savedInstanceState != null) {
                 mIsFavourited = savedInstanceState.getBoolean(EXTRA_IS_FAVOURITED, false);
+                mTrailerList = savedInstanceState.getParcelableArrayList(EXTRA_TRAILERS);
             }
             String moviePath = mMovie.getmImageUrl();
             String url = NetworkUtils.buildMovieImageUrl("w500", moviePath).toString();
@@ -99,13 +104,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
 
             getSupportLoaderManager().initLoader(DETAIL_LOADER_ID, null, this);
 
-            if (NetworkUtils.isOnline(this)) {
-                new ConnectionTask(1, this).execute(NetworkUtils.buildAdditionalInfoMovieUrl(mMovie.getmId(), NetworkUtils.InfoType.VIDEOS));
+            if (mTrailerList != null) {
+                addTrailersToView();
             } else {
-                Toast.makeText(this, R.string.online_error, Toast.LENGTH_SHORT).show();
+                if (NetworkUtils.isOnline(this)) {
+                    new ConnectionTask(1, this).execute(NetworkUtils.buildAdditionalInfoMovieUrl(mMovie.getmId(), NetworkUtils.InfoType.VIDEOS));
+                } else {
+                    Toast.makeText(this, R.string.online_error, Toast.LENGTH_SHORT).show();
+                }
             }
         }
-
     }
 
     @Override
@@ -153,6 +161,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(EXTRA_IS_FAVOURITED, mIsFavourited);
+        outState.putParcelableArrayList(EXTRA_TRAILERS, mTrailerList);
         super.onSaveInstanceState(outState);
     }
 
@@ -220,7 +229,12 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT, Uri.parse(YOUTUBE_URL + key));
         sendIntent.setType("text/plain");
-        startActivity(sendIntent);
+
+        if (sendIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(sendIntent);
+        } else {
+            Toast.makeText(this, getResources().getString(R.string.share_error_string), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
