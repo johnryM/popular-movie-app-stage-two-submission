@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mangonon.johnry.popularmovieapp.app.model.Movie;
+import com.mangonon.johnry.popularmovieapp.app.model.Review;
 import com.mangonon.johnry.popularmovieapp.app.model.Trailer;
 import com.mangonon.johnry.popularmovieapp.db.MovieDatabaseManager;
 import com.mangonon.johnry.popularmovieapp.utils.ConnectionTask;
@@ -43,12 +44,14 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
     public static final String EXTRA_MOVIE = "extra_movie";
     public static final String EXTRA_IS_FAVOURITED = "extra_is_favourited";
     public static final String EXTRA_TRAILERS = "extra_trailers";
+    public static final String EXTRA_REVIEWS = "extra_reviews";
 
     public static final String YOUTUBE_URL = "http://www.youtube.com/watch?v=";
     private static final int DETAIL_LOADER_ID = 1;
 
     private Movie mMovie;
     private ArrayList<Trailer> mTrailerList;
+    private ArrayList<Review> mReviewList;
     private boolean mIsFavourited = false;
 
     @BindView(R.id.movie_image_view) ImageView mImage;
@@ -58,6 +61,8 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
     @BindView(R.id.trailer_container) LinearLayout mTrailerContainer;
     @BindView(R.id.my_toolbar) Toolbar mToolbar;
     @BindView(R.id.detail_scrollview) ScrollView mScrollView;
+    @BindView(R.id.first_review_text) TextView mReviewText;
+    @BindView(R.id.review_text_button) TextView mReviewButton;
 
     public static Intent newInstance(Context context, Movie movie) {
         Intent intent = new Intent(context, MovieDetailsActivity.class);
@@ -81,6 +86,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
             if (savedInstanceState != null) {
                 mIsFavourited = savedInstanceState.getBoolean(EXTRA_IS_FAVOURITED, false);
                 mTrailerList = savedInstanceState.getParcelableArrayList(EXTRA_TRAILERS);
+                mReviewList = savedInstanceState.getParcelableArrayList(EXTRA_REVIEWS);
             }
             String moviePath = mMovie.getmImageUrl();
             String url = NetworkUtils.buildMovieImageUrl("w500", moviePath).toString();
@@ -108,7 +114,17 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
                 addTrailersToView();
             } else {
                 if (NetworkUtils.isOnline(this)) {
-                    new ConnectionTask(1, this).execute(NetworkUtils.buildAdditionalInfoMovieUrl(mMovie.getmId(), NetworkUtils.InfoType.VIDEOS));
+                    new ConnectionTask(ConnectionTask.ConnectionTaskType.TRAILER, this).execute(NetworkUtils.buildAdditionalInfoMovieUrl(mMovie.getmId(), NetworkUtils.InfoType.VIDEOS));
+                } else {
+                    Toast.makeText(this, R.string.online_error, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            if (mReviewList != null) {
+                setReviewText();
+            } else {
+                if (NetworkUtils.isOnline(this)) {
+                    new ConnectionTask(ConnectionTask.ConnectionTaskType.REVIEW,this).execute(NetworkUtils.buildAdditionalInfoMovieUrl(mMovie.getmId(), NetworkUtils.InfoType.REVIEWS));
                 } else {
                     Toast.makeText(this, R.string.online_error, Toast.LENGTH_SHORT).show();
                 }
@@ -162,6 +178,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
     protected void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(EXTRA_IS_FAVOURITED, mIsFavourited);
         outState.putParcelableArrayList(EXTRA_TRAILERS, mTrailerList);
+        outState.putParcelableArrayList(EXTRA_REVIEWS, mReviewList);
         super.onSaveInstanceState(outState);
     }
 
@@ -172,16 +189,20 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
 
     @OnClick(R.id.review_text_button)
     public void show() {
-        startActivity(ReviewsActivity.newInstance(this, mMovie.getmTitle(), mMovie.getmId()));
+        startActivity(ReviewsActivity.newInstance(this, mMovie.getmTitle(), mReviewList));
     }
 
     @Override
-    public void onTaskDone(int requestCode, String output) {
+    public void onTaskDone(ConnectionTask.ConnectionTaskType type, String output) {
         try {
-            switch(requestCode) {
-                case 1:
+            switch(type) {
+                case TRAILER:
                     mTrailerList = JsonUtils.getTrailerItems(MovieDetailsActivity.this, output);
                     if (mTrailerList != null || mTrailerList.size() < 0) addTrailersToView();
+                    break;
+                case REVIEW:
+                    mReviewList = JsonUtils.getReviewItems(this, output);
+                    setReviewText();
                     break;
             }
         } catch (JSONException e) {
@@ -216,6 +237,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements Connectio
             });
 
             mTrailerContainer.addView(trailerItemView);
+        }
+    }
+
+    private void setReviewText() {
+        if (mReviewList.size() > 0) {
+            mReviewText.setText(mReviewList.get(0).getReview());
+            mReviewButton.setVisibility(View.VISIBLE);
+        } else {
+            mReviewText.setText(R.string.no_reviews);
+            mReviewButton.setVisibility(View.INVISIBLE);
         }
     }
 

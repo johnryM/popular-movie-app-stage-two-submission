@@ -5,11 +5,13 @@
     <string name="sort_dialog_title">Sort movie by</string>
     <string name="poster_image">Poster Image</string>
     <string name="online_error">No Internet connection</string>
+    <string name="review_title">Reviews</string>
     <string name="trailer_title">Trailers</string>
-    <string name="see_all_reviews"><![CDATA[See all Reviews >]]></string>
+    <string name="see_all_reviews"><u>See all reviews</u></string>
     <string name="review_prefix">Reviews for</string>
     <string name="favourite">favourite</string>
     <string name="favourite_added">Added to favourites</string>
+    <string name="no_reviews">No Reviews found for this movie</string>
     <string name="favourite_removed">Removed from favourites</string>
     <string name="favourite_error">There was an issue adding to favourites</string>
     <string name="movie_data_error">Error getting Movie data</string>

@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Adap
     }
 
     @Override
-    public void onTaskDone(int requestCode, String output) {
+    public void onTaskDone(ConnectionTask.ConnectionTaskType type, String output) {
         try {
             mMovieDatalist = JsonUtils.getMovieItems(MainActivity.this, output);
             mMovieRecyclerview.setAdapter(new MovieAdapter(mMovieDatalist, MainActivity.this));

@@ -7,15 +7,20 @@ import java.net.URL;
 
 public class ConnectionTask extends AsyncTask<URL, Void, String > {
 
+    public enum ConnectionTaskType {
+        REVIEW,
+        TRAILER
+    }
+
     ConnectionTaskCallback mCallback;
-    int requestCode = 0;
+    ConnectionTaskType requestType;
 
     public ConnectionTask(ConnectionTaskCallback callback) {
         mCallback = callback;
     }
 
-    public ConnectionTask(int requestCode, ConnectionTaskCallback callback) {
-        this.requestCode = requestCode;
+    public ConnectionTask(ConnectionTaskType requestType, ConnectionTaskCallback callback) {
+        this.requestType = requestType;
         mCallback = callback;
     }
 
@@ -40,10 +45,10 @@ public class ConnectionTask extends AsyncTask<URL, Void, String > {
     protected void onPostExecute(String output) {
         super.onPostExecute(output);
 
-        mCallback.onTaskDone(requestCode, output);
+        mCallback.onTaskDone(requestType, output);
     }
 
     public interface ConnectionTaskCallback {
-        void onTaskDone(int requestCode, String output);
+        void onTaskDone(ConnectionTaskType connectionTaskType, String output);
     }
 }
